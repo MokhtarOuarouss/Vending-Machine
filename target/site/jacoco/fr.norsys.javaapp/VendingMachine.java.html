@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>VendingMachine.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">test-app</a> &gt; <a href="index.source.html" class="el_package">fr.norsys.javaapp</a> &gt; <span class="el_source">VendingMachine.java</span></div><h1>VendingMachine.java</h1><pre class="source lang-java linenums">package fr.norsys.javaapp;
+
+import java.util.HashMap;
+import java.util.Map;
+
+public class VendingMachine {
+
+
+<span class="fc" id="L9">    Map&lt;Coin, Integer&gt; coins = new HashMap&lt;Coin, Integer&gt;();</span>
+<span class="fc" id="L10">    Map&lt;Product, Integer&gt; products = new HashMap&lt;Product, Integer&gt;();</span>
+
+    
+<span class="fc" id="L13">    public VendingMachine(Map&lt;Coin, Integer&gt; coins, Map&lt;Product, Integer&gt; products) {</span>
+
+<span class="fc" id="L15">        this.coins = coins;</span>
+<span class="fc" id="L16">        this.products = products;</span>
+        
+<span class="fc" id="L18">    }</span>
+
+    public String BuyProduct(Map&lt;Coin, Integer&gt; coinsEnter, Product product) {
+<span class="fc" id="L21">        return BuyProduct(coinsEnter, product, false);</span>
+    }
+
+
+    public String BuyProduct(Map&lt;Coin, Integer&gt; coinsEnter , Product product,boolean cancel ){
+<span class="pc bpc" id="L26" title="1 of 2 branches missed.">        if (!cancel){</span>
+
+<span class="pc bpc" id="L28" title="1 of 4 branches missed.">            if (isProductAvailable(product) &amp;&amp; hasEnoughCoins(product,coinsEnter)) {</span>
+<span class="fc" id="L29">                products.put(product, products.get(product) - 1);</span>
+
+<span class="fc" id="L31">                System.out.println(product + &quot; | price :&quot; + product.getPrice());</span>
+<span class="fc" id="L32">                System.out.println( &quot; sum Coins giving :&quot; + getTotalCoinsValue(coinsEnter));</span>
+
+<span class="fc" id="L34">                Map&lt;Coin, Integer&gt; changeCoins = OptimalChange( coinsEnter,  product,cancel);</span>
+
+<span class="fc bfc" id="L36" title="All 2 branches covered.">                for (Map.Entry&lt;Coin, Integer&gt; entrychangeCoins : changeCoins.entrySet()) {</span>
+<span class="fc" id="L37">                    System.out.println(entrychangeCoins.getKey() + &quot; / &quot; + entrychangeCoins.getValue());</span>
+<span class="fc" id="L38">                }</span>
+
+<span class="fc" id="L40">                return &quot;Success&quot;;</span>
+
+            } else {
+<span class="fc" id="L43">                throw new RuntimeException(&quot;coins not enough or product not available&quot;);</span>
+            }
+
+        }
+
+        else {
+<span class="nc" id="L49">            return &quot;Canceled Operation&quot;;</span>
+        }
+
+        
+    }
+
+    public Map&lt;Coin, Integer&gt; OptimalChange(Map&lt;Coin, Integer&gt; coinsEnter, Product product,boolean cancel) {
+<span class="fc" id="L56">        int totalCoinsValue = getTotalCoinsValue(coinsEnter);</span>
+<span class="fc" id="L57">        int productPrice = product.getPrice();</span>
+<span class="fc" id="L58">        Map&lt;Coin, Integer&gt; changeCoins = new HashMap&lt;&gt;();</span>
+
+<span class="fc bfc" id="L60" title="All 2 branches covered.">        if(cancel){</span>
+<span class="fc" id="L61">            return coinsEnter ;</span>
+        }
+
+<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (totalCoinsValue &gt;= productPrice) {</span>
+<span class="fc" id="L65">            int change = totalCoinsValue - productPrice;</span>
+
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            for (Coin coin : Coin.values()) {</span>
+<span class="fc" id="L68">                int coinValue = coin.getValue();</span>
+<span class="fc bfc" id="L69" title="All 2 branches covered.">                if (change &gt;= coinValue) {</span>
+
+<span class="fc" id="L71">                    Integer coinsCount = coins.get(coin);  //coins count in machine</span>
+<span class="pc bpc" id="L72" title="1 of 2 branches missed.">                    if (coinsCount != null) {</span>
+<span class="fc" id="L73">                        int coinsToReturn = change / coinValue;</span>
+<span class="fc" id="L74">                        coinsToReturn = Math.min(coinsToReturn, coinsCount);</span>
+<span class="fc bfc" id="L75" title="All 2 branches covered.">                        if (coinsToReturn &gt; 0) {</span>
+<span class="fc" id="L76">                            changeCoins.put(coin, coinsToReturn);</span>
+
+                            
+<span class="fc" id="L79">                            change -= coinsToReturn * coinValue;</span>
+<span class="fc" id="L80">                            coins.put(coin,coinsCount - coinsToReturn);</span>
+                        }
+                    }
+                }
+            }
+
+<span class="fc bfc" id="L86" title="All 2 branches covered.">            if (change == 0) {</span>
+<span class="fc" id="L87">                return changeCoins;</span>
+            }
+<span class="fc" id="L89">            else throw new RuntimeException(&quot;machine has  Not enough coins to change&quot;);</span>
+        } 
+
+<span class="nc" id="L92">        throw new RuntimeException(&quot;Not enough coins to make the purchase&quot;);</span>
+
+    }
+
+
+
+
+
+
+
+    public boolean isProductAvailable(Product product) {
+<span class="pc bpc" id="L103" title="1 of 2 branches missed.">        return products.get(product) &gt; 0;</span>
+    }
+
+
+    public int getTotalCoinsValue(Map&lt;Coin, Integer&gt; coins) {
+<span class="fc" id="L108">        return coins.entrySet().stream()</span>
+<span class="fc" id="L109">                .mapToInt(entry -&gt; entry.getKey().getValue() * entry.getValue())</span>
+<span class="fc" id="L110">                .sum();</span>
+    }
+
+    
+
+    public boolean hasEnoughCoins(Product product, Map&lt;Coin, Integer&gt; coins) {
+
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        return getTotalCoinsValue(coins) &gt;= product.getPrice();</span>
+    }
+
+    public int calculateChange(Product product, Map&lt;Coin, Integer&gt; coins) {
+
+<span class="fc" id="L122">        return getTotalCoinsValue(coins) - product.getPrice();</span>
+    }
+
+
+
+
+    
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.7.202105040129</span></div></body></html>
